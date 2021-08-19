@@ -76,6 +76,23 @@ extension UIScrollView {
         }
     }
 
+    fileprivate func drawScreenshotOfPageContent(_ index: Int, maxIndex: Int, completion: @escaping () -> Void) {
+
+        self.setContentOffset(CGPoint(x: 0, y: CGFloat(index) * self.frame.size.height), animated: false)
+        let pageFrame = CGRect(x: 0, y: CGFloat(index) * self.frame.size.height, width: self.bounds.size.width, height: self.bounds.size.height)
+
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) {
+            self.drawHierarchy(in: pageFrame, afterScreenUpdates: true)
+
+            if index < maxIndex {
+                self.drawScreenshotOfPageContent(index + 1, maxIndex: maxIndex, completion: completion)
+            }else{
+                completion()
+            }
+        }
+    }
+
+    override
     public func asyncTakeSnapshotOfPartialContent(_ contentRect:CGRect,
                                                   composition: ((CGContext) -> CGFloat)? = nil,
                                                   _ completion: @escaping ((UIImage?) -> Void)) {
@@ -104,7 +121,7 @@ extension UIScrollView {
             offset = composition(context)
         }
 
-        self.drawScreenshotOfPageContent(0, maxIndex: pageNum, offset: offset) {
+        self.drawScreenshotOfPagePartialContent(0, maxIndex: pageNum, offset: offset, contentHeight: contentRect.height) {
             let image = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             self.contentOffset = originalOffset
@@ -112,16 +129,20 @@ extension UIScrollView {
         }
     }
 
-    fileprivate func drawScreenshotOfPageContent(_ index: Int, maxIndex: Int, offset: CGFloat = 0, completion: @escaping () -> Void) {
+    fileprivate func drawScreenshotOfPagePartialContent(_ index: Int, maxIndex: Int, offset: CGFloat, contentHeight: CGFloat, completion: @escaping () -> Void) {
 
         self.setContentOffset(CGPoint(x: 0, y: CGFloat(index) * self.frame.size.height), animated: false)
-        let pageFrame = CGRect(x: 0, y: CGFloat(index) * self.frame.size.height + offset, width: self.bounds.size.width, height: self.bounds.size.height)
-
+        let y = CGFloat(index) * self.frame.size.height
+        var pageFrame = CGRect(x: 0, y: (y+offset), width: self.bounds.size.width, height: self.bounds.size.height)
+        if index == maxIndex {
+            let left = (contentHeight-y-offset)
+            pageFrame = CGRect(x: 0, y: (y+offset), width: self.bounds.size.width, height: left)
+        }
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) {
             self.drawHierarchy(in: pageFrame, afterScreenUpdates: true)
 
             if index < maxIndex {
-                self.drawScreenshotOfPageContent(index + 1, maxIndex: maxIndex, offset: offset, completion: completion)
+                self.drawScreenshotOfPagePartialContent(index + 1, maxIndex: maxIndex, offset: offset, contentHeight: contentHeight, completion: completion)
             }else{
                 completion()
             }

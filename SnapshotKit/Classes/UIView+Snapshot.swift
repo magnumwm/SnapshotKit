@@ -57,6 +57,11 @@ extension UIView: SnapshotKitProtocol {
 
         return image
     }
+
+    @objc
+    public func asyncTakeSnapshotOfPartialContent(_ contentRect: CGRect, composition: ((CGContext) -> CGFloat)?, _ completion: @escaping ((UIImage?) -> Void)) {
+        
+    }
 }
 
 

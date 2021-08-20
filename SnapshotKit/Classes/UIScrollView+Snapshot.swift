@@ -131,13 +131,10 @@ extension UIScrollView {
 
     fileprivate func drawScreenshotOfPagePartialContent(_ index: Int, maxIndex: Int, offset: CGFloat, contentHeight: CGFloat, completion: @escaping () -> Void) {
 
-        self.setContentOffset(CGPoint(x: 0, y: CGFloat(index) * self.frame.size.height), animated: false)
         let y = CGFloat(index) * self.frame.size.height
-        var pageFrame = CGRect(x: 0, y: (y+offset), width: self.bounds.size.width, height: self.bounds.size.height)
-        if index == maxIndex {
-            let left = (contentHeight-y-offset)
-            pageFrame = CGRect(x: 0, y: (y+offset), width: self.bounds.size.width, height: left)
-        }
+        self.setContentOffset(CGPoint(x: 0, y: y), animated: false)
+
+        let pageFrame = CGRect(x: 0, y: (y+offset), width: self.bounds.size.width, height: self.bounds.size.height)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) {
             self.drawHierarchy(in: pageFrame, afterScreenUpdates: true)
 
